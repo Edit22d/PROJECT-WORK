@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #f4f7fb;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+    }
+
+    /* Header */
+    h2 {
+      font-weight: bold;
+      color: #4B0082;
+      margin-bottom: 20px;
+    }
+
+    /* Add Book Button */
+    .btn-info {
+      background-color: #20B2AA;
+      color: white;
+      font-weight: bold;
+      padding: 10px 18px;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+    }
+    .btn-info:hover {
+      background-color: #1c948e;
+    }
+
+    /* Search Input */
+    .search-input {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      transition: box-shadow 0.3s ease;
+    }
+    .search-input:focus {
+      box-shadow: 0 0 5px rgba(32, 178, 170, 0.5);
+      border-color: #20B2AA;
+    }
+
+    /* Nav Tabs */
+    .nav-tabs .nav-link {
+      color: #4B0082;
+      font-weight: 600;
+    }
+    .nav-tabs .nav-link.active {
+      background-color: #4B0082;
+      color: white;
+      border-radius: 10px 10px 0 0;
+    }
+
+    /* Card Layout */
+    .card {
+      border: none;
+      border-radius: 15px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card-img-top {
+      height: 200px;
+      object-fit: cover;
+      border-bottom: 1px solid #eee;
+    }
+    .card-body {
+      padding: 15px;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #4B0082;
+    }
+
+    /* Modal Form */
+    .modal-content {
+      border-radius: 15px;
+    }
+    .modal-header {
+      background-color: #f9f9f9;
+      border-bottom: 1px solid #ddd;
+    }
+    .modal-title {
+      color: #4B0082;
+      font-weight: 700;
+    }
+    .form-control {
+      border-radius: 10px;
+      padding: 10px;
+    }
+    label {
+      font-weight: 500;
+      margin-bottom: 5px;
+      display: inline-block;
+    }
+
+    /* Book Actions */
+    .card .btn {
+      margin: 3px 2px;
+      border-radius: 6px;
+      padding: 5px 10px;
+    }
+    .btn-outline-warning {
+      color: #ff9800;
+      border-color: #ff9800;
+    }
+    .btn-outline-warning:hover {
+      background-color: #ff9800;
+      color: white;
+    }
+    .btn-warning {
+      background-color: #ff9800;
+      color: white;
+      border: none;
+    }
+
+    /* Feedback message */
+    .text-muted {
+      font-size: 1rem;
+      color: #888 !important;
+    }
+
+    /* Responsive spacing */
+    .book-container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container book-container">
+    <h2>Book Management System</h2>
+
+    <!-- Tabs for Book Categories -->
+    <ul class="nav nav-tabs" id="bookTabs">
+      <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#allBooks" target="_blank">All Books</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#favorites" target="_blank">Favorites</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#unread" target="_blank">Unread</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#read" target="_blank">Read</a></li>
+    </ul>
+
+    <div class="tab-content mt-3">
+      <div id="allBooks" class="tab-pane fade show active">
+        <div id="bookList" class="row"></div>
+      </div>
+      <div id="favorites" class="tab-pane fade">
+        <div id="favoriteList" class="row"></div>
+      </div>
+      <div id="unread" class="tab-pane fade">
+        <div id="unreadList" class="row"></div>
+      </div>
+      <div id="read" class="tab-pane fade">
+        <div id="readList" class="row"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Add/Edit Book -->
+  <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addBookModalLabel">Add New Book</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="bookForm">
+            <input type="hidden" id="bookId">
+            <div class="mb-3">
+              <label for="title" class="form-label">Book Title</label>
+              <input type="text" class="form-control" id="title" required>
+            </div>
+            <div class="mb-3">
+              <label for="author" class="form-label">Author</label>
+              <input type="text" class="form-control" id="author" required>
+            </div>
+            <div class="mb-3">
+              <label for="genre" class="form-label">Genre</label>
+              <input type="text" class="form-control" id="genre" required>
+            </div>
+            <div class="mb-3">
+              <label for="status" class="form-label">Status</label>
+              <select class="form-control" id="status" required>
+                <option value="Unread">Unread</option>
+                <option value="Read">Read</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="image" class="form-label">Book Image</label>
+              <input type="file" class="form-control" id="image">
+            </div>
+            <button type="submit" class="btn btn-info w-100">Save Book</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // References to elements
+    const bookForm = document.getElementById("bookForm");
+    const bookList = document.getElementById("bookList");
+    const favoriteList = document.getElementById("favoriteList");
+    const unreadList = document.getElementById("unreadList");
+    const readList = document.getElementById("readList");
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadBooks();
+    });
+
+    document.getElementById("bookForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      // Input values
+      const bookId = document.getElementById("bookId").value.trim();
+      const title = document.getElementById("title").value.trim();
+      const author = document.getElementById("author").value.trim();
+      const genre = document.getElementById("genre").value.trim();
+      const status = document.getElementById("status").value;
+      const imageInput = document.getElementById("image");
+
+      // Validate required values
+      if (!title || !author || !genre) {
+        alert("All fields are required!");
+        return;
+      }
+
+      // Process the image if available
+      const imageFile = imageInput.files[0];
+      if (imageFile) {
+        const reader = new FileReader();
+        reader.onloadend = function () {
+          saveBook(bookId, title, author, genre, status, reader.result);
+        };
+        reader.readAsDataURL(imageFile);
+      } else {
+        saveBook(bookId, title, author, genre, status, "");
+      }
+    });
+
+    // Save or update book functionality
+    function saveBook(bookId, title, author, genre, status, image) {
+      let books = JSON.parse(localStorage.getItem("books")) || [];
+
+      if (bookId) {
+        // Update existing book
+        books = books.map(book =>
+          book.id === bookId
+            ? { ...book, title, author, genre, status, image: image || book.image }
+            : book
+        );
+      } else {
+        // Add new book
+        const newBook = {
+          id: crypto.randomUUID(),
+          title,
+          author,
+          genre,
+          status,
+          image,
+          favorite: false
+        };
+        books.push(newBook);
+      }
+
+      // Save to localStorage
+      localStorage.setItem("books", JSON.stringify(books));
+      loadBooks();
+
+      // Reset form and close modal
+      document.getElementById("bookForm").reset();
+      document.getElementById("bookId").value = "";
+      bootstrap.Modal.getInstance(document.getElementById("addBookModal")).hide();
+    }
+
+    // Open Edit Modal
+    function openEditBookModal(bookId) {
+      let books = JSON.parse(localStorage.getItem("books")) || [];
+      let book = books.find(b => b.id === bookId);
+
+      if (!book) {
+        console.error("Book not found!");
+        return;
+      }
+
+      // Open modal
+      let modalElement = document.getElementById("addBookModal");
+      let modal = new bootstrap.Modal(modalElement);
+      modal.show();
+
+      setTimeout(() => {
+        // Update modal title and button text
+        document.querySelector(".modal-title").innerText = "Edit Book";
+        document.querySelector("button[type='submit']").innerText = "Update Book";
+
+        // Pre-fill form with book data
+        document.getElementById("bookId").value = book.id;
+        document.getElementById("title").value = book.title;
+        document.getElementById("author").value = book.author;
+        document.getElementById("genre").value = book.genre;
+        document.getElementById("status").value = book.status;
+      }, 100);
+    }
+
+    // Fetch and load books
+    function loadBooks() {
+      let books = JSON.parse(localStorage.getItem("books")) || [];
+
+      // Clear the lists
+      bookList.innerHTML = "";
+      favoriteList.innerHTML = "";
+      unreadList.innerHTML = "";
+      readList.innerHTML = "";
+
+      books.forEach((book) => {
+        const bookCard = createBookCard(book);
+
+        // Append to correct tab
+        bookList.appendChild(bookCard);
+        if (book.favorite) favoriteList.appendChild(createBookCard(book));
+        if (book.status === "Unread") unreadList.appendChild(createBookCard(book));
+        else readList.appendChild(createBookCard(book));
+      });
+    }
+
+    // Toggle favorite status
+    function toggleFavorite(bookId) {
+      let books = JSON.parse(localStorage.getItem("books")) || [];
+
+      books = books.map(book => {
+        if (book.id === bookId) {
+          return { ...book, favorite: !book.favorite };
+        }
+        return book;
+      });
+
+      localStorage.setItem("books", JSON.stringify(books));
+      loadBooks();
+    }
+
+    // Create book card
+    function createBookCard(book) {
+      const card = document.createElement("div");
+      card.className = "col-md-3 mb-3";
+      card.innerHTML = `
+        <div class="card shadow-sm">
+          <!-- Wrap image with anchor to open in new tab -->
+          <a href="${book.image || 'cover-placeholder.jpg'}" target="_blank">
+            <img src="${book.image || 'cover-placeholder.jpg'}" class="card-img-top" alt="Book Cover">
+          </a>
+          <div class="card-body">
+              <h5 class="card-title">${book.title}</h5>
+              <p class="card-text">Author: ${book.author}</p>
+              <p class="card-text"><small>Genre: ${book.genre}</small></p>
+              <p class="card-text"><small>Status: ${book.status}</small></p>
+              <button class="btn btn-sm btn-danger" onclick="deleteBook('${book.id}')">Delete</button>
+              <button class="btn btn-sm btn-info" onclick="openEditBookModal('${book.id}')">Edit</button>
+              <button class="btn btn-sm ${book.favorite ? "btn-warning" : "btn-outline-warning"}" onclick="toggleFavorite('${book.id}')">
+                ${book.favorite ? "Unfavorite" : "Favorite"}
+              </button>
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // Function to delete a book
+    function deleteBook(bookId) {
+      let books = JSON.parse(localStorage.getItem("books")) || [];
+      books = books.filter((book) => book.id !== bookId);
+      localStorage.setItem("books", JSON.stringify(books));
+      loadBooks();
+    }
+
+    function searchBooks(input) {
+      let query = input.value.toLowerCase().trim();
+      let books = JSON.parse(localStorage.getItem("books")) || [];
+
+      // Filter books based on search query
+      let filteredBooks = books.filter(book => 
+        book.title.toLowerCase().includes(query) || 
+        book.author.toLowerCase().includes(query)
+      );
+
+      // Clear and update book list with search results
+      let bookList = document.getElementById("bookList"); 
+      bookList.innerHTML = ""; // Clear current list
+
+      filteredBooks.forEach(book => {
+        bookList.appendChild(createBookCard(book));
+      });
+
+      // If no books match, show a "No results found" message
+      if (filteredBooks.length === 0) {
+        bookList.innerHTML = `<p class="text-center text-muted">No books found</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
