@@ -20,6 +20,8 @@ document.getElementById("bookForm").addEventListener("submit", function (event) 
   const status = document.getElementById("status").value;
   const imageInput = document.getElementById("image");
 
+  
+
   // Validate required values
   if (!title || !author || !genre) {
     alert("All fields are required!");
@@ -174,6 +176,22 @@ function deleteBook(bookId) {
 function searchBooks(input) {
   let query = input.value.toLowerCase().trim();
   let books = JSON.parse(localStorage.getItem("books")) || [];
+  function searchBooks(input) {
+    const query = input.value.toLowerCase();
+    const bookCards = document.querySelectorAll('#bookList .book-card');
+  
+    bookCards.forEach(card => {
+      const title = card.querySelector('.book-title').textContent.toLowerCase();
+      const author = card.querySelector('.book-author').textContent.toLowerCase();
+  
+      if (title.includes(query) || author.includes(query)) {
+        card.style.display = 'block'; // Show match
+      } else {
+        card.style.display = 'none'; // Hide non-match
+      }
+    });
+  }
+  
 
   // Filter books based on search query
   let filteredBooks = books.filter(book => 

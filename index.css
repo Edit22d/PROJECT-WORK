@@ -1,4 +1,4 @@
-/* Reset & Base Styles */
+Reset & Base Styles
 * {
   box-sizing: border-box;
   margin: 0;
@@ -132,4 +132,17 @@ label {
   max-width: 1100px;
   margin: auto;
   padding: 20px;
+} 
+.book-cover {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+/* Hover Effect */
+.book-cover:hover {
+  transform: scale(1.03);
+  filter: brightness(0.85) contrast(1.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
